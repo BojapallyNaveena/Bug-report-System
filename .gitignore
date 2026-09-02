@@ -1,0 +1,20 @@
+# Node / React
+node_modules/
+frontend/node_modules/
+dist/
+frontend/dist/
+.vite/
+
+# Python / FastAPI
+__pycache__/
+*.pyc
+.venv/
+env/
+ai-service/__pycache__/
+
+# Database & Environment
+*.db
+*.sqlite
+.env
+.DS_Store
+*.log

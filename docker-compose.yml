@@ -1,0 +1,65 @@
+version: '3.8'
+
+services:
+  postgres:
+    image: pgvector/pgvector:pg16
+    container_name: codefix-postgres
+    environment:
+      POSTGRES_DB: codefixdb
+      POSTGRES_USER: codefix_user
+      POSTGRES_PASSWORD: codefix_password
+    ports:
+      - "5432:5432"
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+
+  redis:
+    image: redis:7-alpine
+    container_name: codefix-redis
+    ports:
+      - "6379:6379"
+
+  backend:
+    build:
+      context: ./backend
+      dockerfile: Dockerfile
+    container_name: codefix-backend
+    ports:
+      - "8080:8080"
+    environment:
+      JDBC_URL: jdbc:postgresql://postgres:5432/codefixdb
+      JDBC_USER: codefix_user
+      JDBC_PASSWORD: codefix_password
+      AI_SERVICE_URL: http://ai-service:8000
+    depends_on:
+      - postgres
+      - redis
+
+  ai-service:
+    build:
+      context: ./ai-service
+      dockerfile: Dockerfile
+    container_name: codefix-ai-service
+    ports:
+      - "8000:8000"
+    environment:
+      POSTGRES_HOST: postgres
+      POSTGRES_DB: codefixdb
+      POSTGRES_USER: codefix_user
+      POSTGRES_PASSWORD: codefix_password
+    depends_on:
+      - postgres
+
+  frontend:
+    build:
+      context: ./frontend
+      dockerfile: Dockerfile
+    container_name: codefix-frontend
+    ports:
+      - "3000:3000"
+    depends_on:
+      - backend
+      - ai-service
+
+volumes:
+  pgdata:
